@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - CribzConnect</title>
+<link rel="stylesheet" href="style.css">
+<script defer src="script.js"></script>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.admin-dashboard { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; background: #2c3e50; color: white; padding: 20px; }
+.sidebar h2 { margin-bottom: 30px; }
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar ul li { padding: 10px 0; cursor: pointer; transition: 0.3s; }
+.sidebar ul li:hover { background: rgba(255,255,255,0.1); }
+.main { flex: 1; padding: 20px; background: #f8f9fa; }
+.section { display: none; }
+.section.active { display: block; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+table, th, td { border: 1px solid #ccc; }
+th, td { padding: 10px; text-align: left; }
+button { padding: 5px 10px; cursor: pointer; }
+button.approve { background: #28a745; color: white; border: none; margin-right: 5px; }
+button.decline { background: #dc3545; color: white; border: none; }
+input { padding: 8px; width: 100%; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+<div class="admin-dashboard">
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <ul>
+      <li onclick="showSection('users')">Users</li>
+      <li onclick="showSection('properties')">Property Listings</li>
+      <li onclick="showSection('posts')">Homepage Posts</li>
+      <li onclick="showSection('balances')">Balances & Stats</li>
+      <li onclick="showSection('settings')">Settings</li>
+      <li onclick="logoutAdmin()">Logout</li>
+    </ul>
+  </div>
+  <div class="main">
+    <!-- Users Section -->
+    <div id="users" class="section active">
+      <h3>Registered Users</h3>
+      <table id="users-table">
+        <tr><th>Email</th><th>Name</th><th>Actions</th></tr>
+      </table>
+    </div>
+    
+    <!-- Properties Section -->
+    <div id="properties" class="section">
+      <h3>Property Listings</h3>
+      <table id="properties-table">
+        <tr><th>Property</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+      </table>
+    </div>
+    
+    <!-- Posts Section -->
+    <div id="posts" class="section">
+      <h3>Homepage Posts</h3>
+      <table id="posts-table">
+        <tr><th>Title</th><th>Content</th><th>Actions</th></tr>
+      </table>
+    </div>
+    
+    <!-- Balances Section -->
+    <div id="balances" class="section">
+      <h3>Balances & Stats</h3>
+      <p>Total Users: <span id="total-users">0</span></p>
+      <p>Total Properties: <span id="total-properties">0</span></p>
+      <p>Total Balance: $<span id="total-balance">0</span></p>
+    </div>
+
+    <!-- Settings Section -->
+    <div id="settings" class="section">
+      <h3>Settings</h3>
+      <form id="admin-settings-form">
+        <label>Admin Username</label>
+        <input type="text" id="settings-username" placeholder="Change username">
+        <label>Admin Password</label>
+        <input type="password" id="settings-password" placeholder="Change password">
+        <label>Confirm Password</label>
+        <input type="password" id="settings-confirm-password" placeholder="Confirm password">
+        <button type="submit" class="auth-btn primary">Save Settings</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Ensure admin is logged in
+if(localStorage.getItem('isAdmin') !== 'true'){
+    alert('Access denied. Please login.');
+    window.location.href = 'admin-login.html';
+}
+
+// Sidebar navigation
+function showSection(sectionId){
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+}
+
+// Logout
+function logoutAdmin(){
+    localStorage.removeItem('isAdmin');
+    alert('Logged out successfully.');
+    window.location.href = 'admin-login.html';
+}
+
+// Dummy default data
+const users = [
+    {name:'John Doe', email:'john@example.com'},
+    {name:'Jane Smith', email:'jane@example.com'}
+];
+
+const properties = [
+    {name:'Luxury Villa', owner:'John Doe', status:'Pending'},
+    {name:'Modern Apartment', owner:'Jane Smith', status:'Pending'}
+];
+
+const posts = [
+    {title:'Welcome to CribzConnect', content:'Find your dream home today!'}
+];
+
+// Render users
+const usersTable = document.getElementById('users-table');
+users.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${u.email}</td><td>${u.name}</td><td><button onclick="editUser('${u.email}')">Edit</button></td>`;
+    usersTable.appendChild(tr);
+});
+
+// Render properties
+const propertiesTable = document.getElementById('properties-table');
+properties.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.name}</td><td>${p.owner}</td><td>${p.status}</td>
+    <td><button class="approve" onclick="updatePropertyStatus('${p.name}', 'Approved')">Approve</button>
+        <button class="decline" onclick="updatePropertyStatus('${p.name}', 'Declined')">Decline</button></td>`;
+    propertiesTable.appendChild(tr);
+});
+
+// Render posts
+const postsTable = document.getElementById('posts-table');
+posts.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.title}</td><td>${p.content}</td><td><button onclick="editPost('${p.title}')">Edit</button></td>`;
+    postsTable.appendChild(tr);
+});
+
+// Render balances
+document.getElementById('total-users').textContent = users.length;
+document.getElementById('total-properties').textContent = properties.length;
+document.getElementById('total-balance').textContent = 10000; // placeholder
+
+function editUser(email){ alert('Edit user: ' + email); }
+function updatePropertyStatus(name, status){ alert(`Property "${name}" marked as ${status}`); }
+function editPost(title){ alert('Edit post: ' + title); }
+
+// Settings form
+document.getElementById('admin-settings-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const username = document.getElementById('settings-username').value.trim();
+    const password = document.getElementById('settings-password').value.trim();
+    const confirm = document.getElementById('settings-confirm-password').value.trim();
+    
+    if(password && password !== confirm){
+        alert('Passwords do not match');
+        return;
+    }
+    
+    if(username) localStorage.setItem('adminUser', username);
+    if(password) localStorage.setItem('adminPass', password);
+    
+    alert('Settings updated successfully!');
+});
+</script>
+</body>
+</html>
